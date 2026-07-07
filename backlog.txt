@@ -12,11 +12,11 @@ BACKLOG 17/5:
 
     Extemamente fácil:
     * Criar o campo de categoria,ex: "age": "Infantil".
-    * Várias imagens e feature de passar imagens. 
+    * Várias imagens e feature de passar imagens.
 
     Grupo 2:
 
-    * Dockerização do projeto (Backend --> Django, Express e ASP.NET Core)
+    * Dockerização do projeto (Backend --> Django)
     * Kubernetes (Backend)
     * AWS (Backend)
     * CI/CD para automatizar o processo de deploy (Backend)
@@ -24,32 +24,29 @@ BACKLOG 17/5:
     * Avaliações de produtos, isso é facil, basta criar uma model e tacar um foreign key no db Users e DbClothes e ta feito basicamente.
 
     - Fazer o API Gateway ()
-    - Entender mais sobre o framework Express
 
-  - Estudar mais sobre orientação a objeto em C#.
-  - Como usei CORS para fazer a comunicação entre o React e o ASP.NET.
+  - Como usei CORS para fazer a comunicação entre o React e o Django.
   - Como criei as páginas automaticas de cada produto
-  - Como usei JWT com o Django e Node.
-  - Como usei WebHooks com o ASP.NET Core
+  - Como usei JWT com o Django.
+  - Como usei WebHooks do Stripe com o Django
   - Relacionamentos nas models do Django e exibição no Admin.
   - Carrossel de imagens com React.
   - Como extraí cookies do navegador
   - Como fiz uma espécie de FULL CROSS JOIN no django
-  - Fazer flashcards acerca do cachê com Redis no Node
   - Fazer flashcards acerca da quantidade de produtos na página de produtos
 
-	
+
 ## Frontend
 
-  - Alterar o Componente de Cabeçalho de acordo com a página em questão e se o usuário está logado (useState + JWT).    
+  - Alterar o Componente de Cabeçalho de acordo com a página em questão e se o usuário está logado (useState + JWT).
   - Fazer uma lista de exercícios acerca do useState.
 
 ## Backend
 
 
-  - Fazer testes unitários, com Node (no back), Jest (no front), PyTest (Django), xUnit(ASP.NET Core)
+  - Fazer testes unitários, com Jest (no front) e PyTest (Django)
   - Implementar CI/CD com o GitHub Actions.
-   
+
 
   - Implementar um serviço de emails para:
     - Confirmar o Cadastro
@@ -57,7 +54,7 @@ BACKLOG 17/5:
     - Ou configurar meu próprio smtp.
 
   - refatorar: users/views.py, pois apenas algumas views e url não são mais necessárias
-  
+
   - Implementar um ChatBot para auxílio do cliente.
 
   - Testes automatizados

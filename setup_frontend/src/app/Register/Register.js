@@ -13,8 +13,8 @@ function Inputs(props) {
             <input
                 required
                 minLength={props.Length || 1}
-                className="placeholder:text-gray-500 placeholder:italic placeholder:text-xl 
-            placeholder:text-center border-1 border-indigo-300 
+                className="placeholder:text-gray-500 placeholder:italic placeholder:text-xl
+            placeholder:text-center border-1 border-indigo-300
             md:border-2 m-3"
                 onChange={props.onChange}
                 placeholder={props.placeholder}
@@ -48,7 +48,7 @@ export function Register() {
             secondPassword: secondPassword
         };
         try {
-            const request = await axios.post("http://localhost:3001/Cadastro", data, { validateStatus: () => true });
+            const request = await axios.post("http://localhost:8000/forms/process_register/", data, { validateStatus: () => true });
             if (request.status == 201) {
                 console.log(request.data);
             }

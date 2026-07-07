@@ -1,4 +1,3 @@
-from tkinter import E
 from django.shortcuts import render, redirect, get_object_or_404
 from django.contrib import messages
 from django.contrib.auth.models import User
@@ -21,7 +20,9 @@ from Api_Clothes.models import DataBaseClothes
 from Api_Clothes.serializers import SerializersClothes
 from rest_framework import serializers
 from rest_framework.response import Response
-from rest_framework.decorators import api_view
+from rest_framework.decorators import api_view, permission_classes
+from rest_framework.permissions import IsAuthenticated
+from rest_framework_simplejwt.tokens import RefreshToken
 from xml.etree import ElementTree
 import requests
 import json
@@ -37,12 +38,12 @@ def Verifications(request):
 
     cards = DataBaseClothes.objects.all()
 
-    
+
     if request.user.is_authenticated:
         if request.user.is_superuser:
             is_superuser=True
             print("A verificação foi bem-sucedida, você é um administrador!")
-        
+
         try:
             # Devemos manter a lógica assim pois, e se o usuário não tiver imagem?, ele vai cair na mesma página de quem não está logado?
             # Ou, e se o usuário acabou de deletar sua conta?, ele deve ser redirecionado para a mesma página padrão?
@@ -69,13 +70,13 @@ class LoginValidate(serializers.Serializer):
 @ensure_csrf_cookie
 def ProcessLogin(request):
 
-    if request.method == 'POST':  
+    if request.method == 'POST':
 
         serializer = LoginValidate(data=request.data)
 
         if not serializer.is_valid():
             return Response({"ERROR": "O conteúdo submetido não é válido."}, status=403)
-        
+
         get_user = serializer.validated_data.get("user")
         get_password = serializer.validated_data.get("password")
 
@@ -92,9 +93,12 @@ def ProcessLogin(request):
         if user is not None:
             print("O usuário não é Null")
             auth.login(request, user)
+            tokens = RefreshToken.for_user(user)
             return JsonResponse(
                 {"Success": "Seja bem vindo!",
                  "X-CSRFToken": CSRF,
+                 "access": str(tokens.access_token),
+                 "refresh": str(tokens),
                 }, status=200)
         return JsonResponse({"ERROR": "As credenciais não conferem"}, status=401)
 # TODO: Refatorar
@@ -134,7 +138,7 @@ class RegisterValidate(serializers.Serializer):
 @csrf_exempt
 @require_http_methods(['POST'])
 @api_view(['POST'])
-def ProcessRegister(request): 
+def ProcessRegister(request):
     serializer = RegisterValidate(data=request.data)
     if request.method == 'POST':
         if serializer.is_valid():
@@ -167,7 +171,7 @@ def ProcessRegister(request):
                             print(f"Houve um erro, veja: {err}")
                         return Response({"Success": "Usuário cadastrado com sucesso"}, status=201)
         else:
-            return Response({"ERROR": "O conteúdo submetido não é valido."}, status=400)  
+            return Response({"ERROR": "O conteúdo submetido não é valido."}, status=400)
 
 def formRegister(request):
 
@@ -218,7 +222,7 @@ def UsarApiCorreios(cep_destino):
         "nVlValorDeclarado": "0",
         "sCdAvisoRecebimento": "N",
         "StrRetorno": "xml"
-    }    
+    }
 
     response = requests.get(url, params=params)
     tree = ElementTree.fromstring(response.content)
@@ -234,7 +238,7 @@ def CalcFretePrazo(request):
             try:
                 prazo_de_entrega_com_um_atraso = UsarApiCorreios(cep_destino) + 1
                 return JsonResponse({'Success': prazo_de_entrega_com_um_atraso})
-            except Exception as e: 
+            except Exception as e:
                 return JsonResponse({'ERROR': str(e) })
         else:
             return JsonResponse({'ERROR': 'Deve-se conter o cep do destinatário'}, status=400)
@@ -261,41 +265,40 @@ def Logout(request):
     redirect("login_form")
     return render(request, "Forms/Logout.html")
 
-@csrf_exempt
-@require_http_methods(['POST'])
+# A autenticação JWT agora é feita diretamente pelo DRF (simplejwt),
+# substituindo o middleware "verifyToken" que existia no serviço Node.
+@api_view(['POST'])
+@permission_classes([IsAuthenticated])
 def ProcessUsers(request):
     try:
-        body = json.loads(request.body)
-        username = body.get("username")
-        if(username):
-
-            user = User.objects.get(id=username.get("user_id"))
-
-            if user:
-                data = {"id": user.id, "username":user.username, "email": "user.email"}
-                print(data)
-                return JsonResponse({
-                    "id": user.id,
-                    "username": user.username,
-                    "email": user.email,
-                }, status=200)
-
-            return JsonResponse({ "error": "User not found" }, status=404)
-        
+        user = request.user
+        return JsonResponse({
+            "id": user.id,
+            "username": user.username,
+            "email": user.email,
+        }, status=200)
     except Exception as e:
         return JsonResponse({ "error": str(e) }, status=500)
 
-@csrf_exempt
-@require_http_methods(['GET'])
+@api_view(['GET'])
+@permission_classes([IsAuthenticated])
 def ProcessUsersPayments(request):
     try:
-        body = json.loads(request.body)
-        GetToken = body.get("token")
-        if GetToken:
-            GetPaymentsUsers = HistoryPayments.objects.all(Username=GetToken.get("user_id"))
-            if not GetPaymentsUsers:
-                return JsonResponse({"ERROR":"Nenhum produto encontrado para o respectivo usuário"}, status=404)
-            return JsonResponse({"Products":GetPaymentsUsers})
+        GetPaymentsUsers = HistoryPayments.objects.filter(Username=request.user)
+        if not GetPaymentsUsers.exists():
+            return JsonResponse({"ERROR":"Nenhum produto encontrado para o respectivo usuário"}, status=404)
+        products = [
+            {
+                "Product": payment.Product.name,
+                "Image": payment.Image,
+                "Value": payment.Value,
+                "Amount": payment.Amount,
+                "Date": payment.Date.isoformat(),
+                "User": payment.Username.username,
+            }
+            for payment in GetPaymentsUsers
+        ]
+        return JsonResponse({"Products": products})
     except Exception as e:
         return JsonResponse({"ERROR": str(e)}, status=500)
 
@@ -339,7 +342,7 @@ def ProcessSearch(request):
         products = list(product_qs.values("id", "name", "price", "image"))
 
         return JsonResponse({'results': products}, status=200)
-    
+
     except Exception as e:
         return JsonResponse({'ERROR': str(e)}, status=400)
 
@@ -358,7 +361,7 @@ def ProcessSearchCategory(request):
         if not category:
             return JsonResponse({'error': "There is no Category"}, status=400)
 
-        process_info = DataBaseClothes.objects.filter(category__name__in=category)
+        process_info = DataBaseClothes.objects.filter(category__name__iexact=category)
         # Sorry Uncle Bob, but I need to use another Serializer from other paste to use here
         # I promess to fix it soon.
         process_search = SerializersClothes(process_info, many=True)
@@ -376,7 +379,7 @@ def delete_account(request):
 
 
 def MainPage(request, pk=None, **kwargs):
-    cards = DataBaseClothes.objects.all()  
+    cards = DataBaseClothes.objects.all()
     return render(request, "Main/FakeMainPage.html", {"cards": cards})
 
 
@@ -409,7 +412,7 @@ def product(request, pk):
 
     # Create a flash-card about it
     boolean_fields = {
-        field.name: getattr(product_request, field.name) 
+        field.name: getattr(product_request, field.name)
         for field in product_request._meta.fields
         if isinstance(field, models.BooleanField) and field.name != 'public'
     }
@@ -420,7 +423,7 @@ def product(request, pk):
 @login_required
 def ProfileUser(request):
     user = request.user
-    return render(request, "Main/ProfileUser.html", {"user":user}) 
+    return render(request, "Main/ProfileUser.html", {"user":user})
 
 class Forget(PasswordResetView):
 
@@ -474,11 +477,11 @@ def Reset_password_SendForm(request):
 class Reset_password(PasswordChangeView):
     template_name = "Emails/Reset.html"
     success_url = "password_reset_completed"
-    
+
     def Post(self, request, *args, **kwargs):
         # Validar as informações contidas aqui.
         pass
-    
+
 
 class ChagePassword_completed(PasswordResetCompleteView):
     template_url = 'Reset/password_reset_completed.html'

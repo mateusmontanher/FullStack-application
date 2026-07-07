@@ -1,5 +1,6 @@
 "use client";
 import { useEffect} from "react";
+import { useRouter } from "next/navigation";
 import Header from "./Components/header/";
 import Cards from "./Components/Cards/";
 import Footer from "./Components/footer/";
@@ -7,16 +8,18 @@ import Mid from "./Components/Mid/";
 
 function Home() {
 
+    const router = useRouter();
+
     useEffect(() => {
         const accessToken = localStorage.getItem("access");
         const refreshToken = localStorage.getItem("refresh");
 
         console.log(`Valor de accessToken: ${accessToken} \n \n valor de refreshToken: ${refreshToken} `);
-        
+
         const fetchUser = async () => {
             try {
                 console.log("Tentando buscar os dados do usuario");
-                const res = await fetch("http://localhost:3001/UserInfo", {
+                const res = await fetch("http://localhost:8000/forms/process_users/", {
                     method: "POST",
                     headers: {
                         "Content-Type": "application/json",
@@ -25,12 +28,12 @@ function Home() {
                 });
                 console.log("O access token foi enviado");
                 if (res.status === 401 && refreshToken) {
-                    const refreshRes = await fetch("http://localhost:3001/refresh", {
+                    const refreshRes = await fetch("http://localhost:8000/api/token/refresh/", {
                         method: "POST",
                         headers: {
                             "Content-Type": "application/json",
-                            "authorization": `Bearer ${refreshToken}`,
                         },
+                        body: JSON.stringify({ refresh: refreshToken }),
                     });
 
                     if (refreshRes.ok) {
@@ -39,7 +42,7 @@ function Home() {
                         localStorage.setItem("refresh", newTokens.refresh || refreshToken);
                         console.log("Tokens atualizados com sucesso.");
 
-                        const retryRes = await fetch("http://localhost:3001/UserInfo", {
+                        const retryRes = await fetch("http://localhost:8000/forms/process_users/", {
                             method: "POST",
                             headers: {
                                 "Content-Type": "application/json",
@@ -50,7 +53,11 @@ function Home() {
                         localStorage.setItem("user", userData.username);
                         console.log("Dados do usuario armazenados no localStorage:", userData.username);
                     } else {
-                        console.log("err");
+                        console.log("Refresh token invalido ou expirado. Redirecionando para o Login.");
+                        localStorage.removeItem("access");
+                        localStorage.removeItem("refresh");
+                        localStorage.removeItem("user");
+                        router.push("/Login");
                     }
                 } else if (res.ok) {
                     console.log(res);
@@ -70,7 +77,7 @@ function Home() {
         };
 
         fetchUser();
-    }, []);
+    }, [router]);
   return (
     <section className="">
       <Header h1="M&M vendedores" />

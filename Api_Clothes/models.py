@@ -54,8 +54,8 @@ class ClothesSizeColorStock(models.Model):
     color = models.ForeignKey(Color, on_delete=models.CASCADE, related_name="color_stock")
     amount = models.PositiveIntegerField(default=0)
 
-class Meta:
-    unique_together = ('product', 'size', 'color')
+    class Meta:
+        unique_together = ('product', 'size', 'color')
            
 class Category(models.Model):
     name = models.CharField(max_length=50, unique=True)

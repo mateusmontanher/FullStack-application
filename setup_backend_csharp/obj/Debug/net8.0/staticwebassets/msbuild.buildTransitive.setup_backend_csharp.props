@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\buildMultiTargeting\setup_backend_csharp.props" />
-</Project>

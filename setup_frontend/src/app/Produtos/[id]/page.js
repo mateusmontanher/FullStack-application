@@ -1,9 +1,9 @@
 "use client";
 import { useEffect, useState } from "react";
 import Header from "../../Components/header";
-import Footer from "../../Components/footer"; 
+import Footer from "../../Components/footer";
 import axios from "axios";
-import { loadStripe } from "@stripe/stripe-js"; 
+import { loadStripe } from "@stripe/stripe-js";
 
 
 function ProductPage({ params }) {
@@ -33,9 +33,9 @@ function ProductPage({ params }) {
 
 
     const StripeCheckout = async () => {
-        const url = "http://localhost:5039/Payments/create-checkout-session/";
+        const url = "http://localhost:8000/Payments/create-checkout-session/";
         console.log("Esse é o valor de quantity: ",quantity);
-        console.log("Esse é o valor de image: ", product.image);    
+        console.log("Esse é o valor de image: ", product.image);
         console.log("Esse é o valor de product: ", product.price);
         if (!localStorage.getItem("user")) {
             alert("User not found, you will be redirect to Login page");
@@ -87,7 +87,7 @@ function ProductPage({ params }) {
                             className="sm:relative md:relative scale-80 md:scale-100 left-0 bg-gray-700 text-white p-2 rounded-full hover:bg-gray-900"
                         >
                             ◀
-                        </button>   
+                        </button>
 
                         <img
                             src={images[currentImageIndex]}
@@ -116,11 +116,11 @@ function ProductPage({ params }) {
                                         <option key={index} onClick={(event) => { setOptionClothe(event.target.value) }}>
                                             tamanho: {value.size.name}
                                         </option>
-                                        
+
                                         <option>
                                             cor: {value.color.name}
                                         </option>
-                                        
+
                                         <option>
                                             unidades: {value.amount}
                                         </option>
@@ -155,7 +155,7 @@ function ProductPage({ params }) {
                             className="scale-110 rounded mt-8 mx-5"
                             alt="Product"
                         />
-                                                                
+
                         <button
                             onClick={() => setCurrentImageIndex((prev) => (prev + 1) % images.length)}
                             className="relative md:relative scale-80 md:scale-100 right-0 bg-gray-700 text-white p-2 rounded-full hover:bg-gray-900"
@@ -192,7 +192,7 @@ function ProductPage({ params }) {
 
             </section>
 
-        </>  
+        </>
     );
 }
 

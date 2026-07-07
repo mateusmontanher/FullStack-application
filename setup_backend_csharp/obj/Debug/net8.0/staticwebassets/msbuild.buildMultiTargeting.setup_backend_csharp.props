@@ -1,3 +1,0 @@
-﻿<Project>
-  <Import Project="..\build\setup_backend_csharp.props" />
-</Project>

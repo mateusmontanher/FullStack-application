@@ -12,7 +12,7 @@ function Cards() {
     useEffect(() => {
         const fetchProducts = async () => {
             try {
-                const response = await fetch("http://localhost:5039/Clothes/");
+                const response = await fetch("http://localhost:8000/API/Crud/");
                 const data = await response.json();
                 setProducts(data);
                 setFilteredProducts(data);
@@ -63,10 +63,10 @@ function Cards() {
             <div className="flex flex-col justify-center items-center md:underline md:underline-offset-2 decoration-3 decoration-indigo-100 m-5">
                 <p className="p-4 font-sans font-light text-3xl md:text-8xl">Veja o nosso
                     <span className="
-                        bg-gradient-to-r 
-                        from-sky-700 to-indigo-800 
+                        bg-gradient-to-r
+                        from-sky-700 to-indigo-800
                         bg-clip-text mx-2 md:mx-5
-                        transition ease-in-out duration-900 
+                        transition ease-in-out duration-900
                         hover:bg-gradient-r hover:from-indigo-800 hover:to-purple-600
                         font-sans font-light text-transparent">
                         catálogo:
@@ -83,7 +83,7 @@ function Cards() {
                         </button>
                         {categories.map((cat) => (
                             <div key={cat} onClick={() => handleCategorySelect(cat)} className={`
-                                flex items-center gap-2 cursor-pointer outline w-fit p-2 rounded 
+                                flex items-center gap-2 cursor-pointer outline w-fit p-2 rounded
                                 outline-gray-500 my-1 transition-all
                                 ${category === cat ? 'bg-sky-200' : ''}
                             `}>

@@ -11,17 +11,21 @@ function Payments(){
         const takeAccessToken = localStorage.getItem("access");
         const takeRefreshToken = localStorage.getItem("refresh");
 
-        function getProducts() {
-            const requestProductsUserInfo = fetch("http://localhost:3001/UserHistory", {
-                method: 'GET',
-                headers: {
-                    'Content-Type': "application/json", 'authorization': `Bearer ${takeAccessToken}`
-                },
-            });
+        async function getProducts() {
+            try {
+                const requestProductsUserInfo = await fetch("http://localhost:8000/forms/process_user_payments/", {
+                    method: 'GET',
+                    headers: {
+                        'Content-Type': "application/json", 'authorization': `Bearer ${takeAccessToken}`
+                    },
+                });
 
-            if (requestProductsUserInfo.ok) {
-                const data = requestProductsUserInfo.json();
-                setProduct(data);
+                if (requestProductsUserInfo.ok) {
+                    const data = await requestProductsUserInfo.json();
+                    setProduct(data.Products);
+                }
+            } catch (e) {
+                console.error("Erro ao buscar o histórico de compras:", e);
             }
         }
 
